@@ -62,7 +62,7 @@ def load_bomb() -> tuple[list[pg.Surface], list[int]]:
     return bb_imgs, bb_accs
 
 
-def game_over(screen, kk_imgs):
+def game_over(screen, kk_imgs):  # ファイト！
     """
     引数:
     戻り値:
