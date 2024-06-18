@@ -62,6 +62,25 @@ def load_bomb() -> tuple[list[pg.Surface], list[int]]:
     return bb_imgs, bb_accs
 
 
+def game_over(screen, kk_imgs):
+    """
+    引数:
+    戻り値:
+    """
+    blackout = pg.Surface(screen.get_size())
+    blackout.set_alpha(150)  # 半透明度を設定（0: 完全透明, 255: 完全不透明）
+    blackout.fill((0, 0, 0))  # 黒で塗りつぶす
+    crying_kk_img = pg.image.load("fig/8.png")  # 実際の画像ファイル名に合わせて変更が必要です
+    font = pg.font.Font(None, 100)
+    game_over_text = font.render("Game Over", True, (255, 255, 255))  # 白色のテキストを作成
+    screen.blit(blackout, (0, 0))  # ブラックアウトを画面全体に描画
+    screen.blit(crying_kk_img, (WIDTH // 2 - crying_kk_img.get_width() // 2, HEIGHT // 2 - crying_kk_img.get_height() // 2))
+    text_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + crying_kk_img.get_height() // 2 + 20))
+    screen.blit(game_over_text, text_rect)
+    pg.display.update()
+    pg.time.delay(5000)
+    return
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -77,12 +96,13 @@ def main():
     vx, vy = +5, +5  # 爆弾の横方向速度，縦方向速度
     clock = pg.time.Clock()
     tmr = 0
+    game_over = False
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
-                return
+                game_over = True
         if kk_rct.colliderect(bb_rct):
-            return  # ゲームオーバー
+            game_over = True
         screen.blit(bg_img, [0, 0]) 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -106,6 +126,8 @@ def main():
         if not tate:
             vy *= -1
         screen.blit(bb_img, bb_rct)
+        if game_over:
+            game_over(screen, kk_imgs)
         pg.display.update()
         tmr += 1
         clock.tick(50)
