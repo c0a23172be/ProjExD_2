@@ -47,17 +47,31 @@ def load_koukaton() -> dict:
     return kk_imgs
 
 
+def load_bomb() -> tuple[list[pg.Surface], list[int]]:
+    """
+    引数:なし
+    戻り値:爆弾の拡大と加速度を返す
+    """
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]  # 加速度のリスト
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_img.set_colorkey((0, 0, 0))
+        bb_imgs.append(bb_img)
+    return bb_imgs, bb_accs
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")    
     kk_imgs = load_koukaton()  # こうかとんを読み込み
-    kk_img = kk_imgs[(-5, 0)]  # 初期画面の上向きに設定
+    kk_img = kk_imgs[(-5, 0)]  # 初期画面の左向きに設定
     kk_rct = kk_img.get_rect()
     kk_rct.center = 900, 400
-    bb_img = pg.Surface((20, 20))  # 1辺が20の空のSarfaceを作る
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 空のSurfaceに赤い円を描く
-    bb_img.set_colorkey((0, 0, 0))
+    bb_imgs, bb_accs = load_bomb()  # 爆弾を読み込み
+    bb_img = bb_imgs[0]  # 爆弾画像の設定
     bb_rct =bb_img.get_rect()  # 爆弾Rect
     bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
     vx, vy = +5, +5  # 爆弾の横方向速度，縦方向速度
@@ -82,7 +96,10 @@ def main():
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)
+        avx = vx * bb_accs[min(tmr // 500, 9)]  # 時間経過で爆弾の横軸が加速する
+        avy = vy * bb_accs[min(tmr // 500, 9)]  # 時間経過で爆弾の縦軸が加速する
+        bb_img = bb_imgs[min(tmr // 500, 9)]  # 時間経過で爆弾が拡大する。
+        bb_rct.move_ip(avx, avy)
         yoko, tate = check_bound(bb_rct)
         if not yoko:
             vx *= -1
